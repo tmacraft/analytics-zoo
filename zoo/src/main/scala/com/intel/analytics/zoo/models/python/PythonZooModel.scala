@@ -310,6 +310,26 @@ class PythonZooModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     WideAndDeep.loadModel(path, weightPath)
   }
 
+  def createZooSessionRecommender(
+      itemCount: Int,
+      itemEmbed: Int,
+      rnnHiddenLayers: JList[Int],
+      sessionLength: Int,
+      includeHistory: Boolean,
+      mlpHiddenLayers: JList[Int],
+      historyLength: Int,
+      model: AbstractModule[Activity, Activity, T]): SessionRecommender[T] = {
+    new SessionRecommender[T](itemCount, itemEmbed, rnnHiddenLayers.asScala.toArray, sessionLength,
+      includeHistory, mlpHiddenLayers.asScala.toArray, historyLength)
+      .addModel(model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]])
+  }
+
+  def loadSessionRecommender(
+      path: String,
+      weightPath: String = null): SessionRecommender[T] = {
+    SessionRecommender.loadModel(path, weightPath)
+  }
+
   def toUserItemFeatureRdd(featureRdd: JavaRDD[Array[Object]]): RDD[UserItemFeature[T]] = {
     featureRdd.rdd.foreach(x =>
       require(x.length == 3, "UserItemFeature should consist of userId, itemId and sample"))
